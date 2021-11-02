@@ -1,0 +1,36 @@
+# Copyright 2021 syzkaller project authors. All rights reserved.
+# Use of this source code is governed by Apache 2 LICENSE that can be found in the LICENSE file.
+
+# See https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/uapi/linux/cros_ec_chardev.h for upstream definitions
+
+include <linux/ioctl.h>
+include <linux/fcntl.h>
+
+include <uapi/linux/cros_ec_chardev.h>
+
+resource fd_cros_ec[fd]
+
+openat$cros_ec(fd const[AT_FDCWD], file ptr[in, string[cros_ec_devs]], flags flags[open_flags], mode const[0]) fd_cros_ec
+
+read$cros_ec(fd fd_cros_ec, buf buffer[out], count len[buf])
+
+ioctl$CROS_EC_DEV_IOCEVENTMASK(fd fd_cros_ec, cmd const[CROS_EC_DEV_IOCEVENTMASK], arg intptr)
+ioctl$CROS_EC_DEV_IOCXCMD(fd fd_cros_ec, cmd const[CROS_EC_DEV_IOCXCMD], arg ptr[inout, cros_ec_command])
+ioctl$CROS_EC_DEV_IOCRDMEM(fd fd_cros_ec, cmd const[CROS_EC_DEV_IOCRDMEM], arg ptr[inout, cros_ec_readmem])
+
+cros_ec_command {
+	version	int32
+	command	int32
+	outsize	len[data, int32]
+	insize	int32
+	result	int32	(out)
+	data	array[int8]	(inout)
+}
+
+cros_ec_readmem {
+	offset	int32
+	bytes	len[buffer, int32]
+	buffer	array[int8]
+}
+
+cros_ec_devs = "/dev/cros_ec", "/dev/cros_fp", "/dev/cros_ish", "/dev/cros_pd", "/dev/cros_scp", "/dev/cros_tp"
